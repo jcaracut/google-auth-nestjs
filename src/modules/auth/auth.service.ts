@@ -55,9 +55,7 @@ export class AuthService {
       // Verify the refresh token and extract payload
       const payload = this.jwtService.verify<{ sub: number; email: string }>(
         refreshToken,
-        {
-          secret: process.env.JWT_SECRET,
-        },
+        { secret: process.env.JWT_SECRET },
       );
 
       // Fetch user from the database
@@ -66,8 +64,21 @@ export class AuthService {
         throw new UnauthorizedException('User not found');
       }
 
-      // Call login with email and password
-      return this.login({ email: user.email, password: user.password });
+      // ✅ Directly generate new tokens (no password check)
+      const newAccessToken = this.jwtService.sign(
+        { sub: user.id, email: user.email },
+        { expiresIn: '15m' },
+      );
+
+      const newRefreshToken = this.jwtService.sign(
+        { sub: user.id, email: user.email },
+        { expiresIn: '7d' },
+      );
+
+      return {
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+      };
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }
