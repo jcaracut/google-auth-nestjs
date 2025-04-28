@@ -12,18 +12,19 @@ import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
+import { LoginDto, RegisterDto } from './dtos';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  login(@Body() body) {
+  login(@Body() body: LoginDto) {
     return this.authService.login(body);
   }
 
   @Post('register')
-  register(@Body() body) {
+  register(@Body() body: RegisterDto) {
     const { email, password, name } = body;
     if (!email || !password) {
       throw new ConflictException('Email and password are required');
